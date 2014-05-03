@@ -179,14 +179,14 @@ Mst creatNode(Ms ms)
 	return mst;
 }
 
-int64_t nanoseconds(void)
+uint64_t nanoseconds(void)
 {
     struct timeval tv;
     if (gettimeofday(&tv, 0)) {
     	return -1;
     }
 
-    return ((int64_t)tv.tv_sec)*1000000000 + ((int64_t)tv.tv_usec)*1000;
+    return ((uint64_t)tv.tv_sec)*1000000000 + ((uint64_t)tv.tv_usec)*1000;
 }
 
 Mst find(uint64_t id)
@@ -223,13 +223,42 @@ Mst find(uint64_t id)
 	return t;
 }
 
-void doTest()
+void doTest1()
 {
+	uint64_t i,r;
+	Ms ms = NULL;
+	Mst mst = NULL;
+	fprintf(stderr, "开始写入数据 %llu\n", (unsigned long long)nanoseconds());
+	for (i = 0; i < 10000000; i++)
+	{
+		ms = malloc(sizeof(struct ms));
+		ms->id = i + 1;
+		put(ms);
+	}
+	fprintf(stderr, "写入完毕 %llu\n\n", (unsigned long long)nanoseconds());
 
+	for (i = 0; i < 1000; i++)
+	{
+		r = rand() % 10000000 + 1;
+
+		fprintf(stderr, "查找 %llu\n", (unsigned long long)r);
+		mst = find(r);
+		if (mst) {
+			fprintf(stderr, "%llu 找到了 %llu\n", (unsigned long long)r,
+					(unsigned long long)nanoseconds());
+		} else {
+			fprintf(stderr, "%llu 没到了 %llu\n", (unsigned long long)r,
+								(unsigned long long)nanoseconds());
+			continue;
+		}
+		fprintf(stderr, "id : %llu\n", (unsigned long long)mst->ms->id);
+		fprintf(stderr, "mst : %p\n", mst);
+		fprintf(stderr, "ms : %p\n\n", mst->ms);
+	}
 }
 
 int main(int argc, char **argv)
 {
-	doTest();
+	doTest1();		// 顺序写入，随机读取
 	return 0;
 }

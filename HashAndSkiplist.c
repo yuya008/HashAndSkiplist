@@ -130,7 +130,15 @@ void _initSkipList(Bucket *bu)
 			k = NULL, v = NULL, m = NULL;
 
 	Ms min = malloc(sizeof(struct ms));
+	if (min == NULL) {
+		fprintf(stderr, "%s\n", "OOM");
+		exit(1);
+	}
 	Ms max = malloc(sizeof(struct ms));
+	if (max == NULL) {
+		fprintf(stderr, "%s\n", "OOM");
+		exit(1);
+	}
 	min->id = 0;
 	max->id = -1;
 
@@ -222,43 +230,61 @@ Mst find(uint64_t id)
 	}
 	return t;
 }
-
+//
+//	顺序写入1亿条数据，随机读取10000条
+//
 void doTest1()
 {
+
+#define ulonglong	(unsigned long long)
+
 	uint64_t i,r;
 	Ms ms = NULL;
 	Mst mst = NULL;
-	fprintf(stderr, "开始写入数据 %llu\n", (unsigned long long)nanoseconds());
-	for (i = 0; i < 10000000; i++)
+	fprintf(stderr, "开始写入数据 %llu\n", ulonglong nanoseconds());
+	for (i = 0; i < 100000000; i++)
 	{
 		ms = malloc(sizeof(struct ms));
 		ms->id = i + 1;
-		put(ms);
+		if(put(ms)) {
+			fprintf(stdout, "写入 %llu 失败\n", ulonglong(i + 1));
+			exit(1);
+		} else {
+			fprintf(stdout, "写入 %llu 成功\n", ulonglong(i + 1));
+
+		}
 	}
-	fprintf(stderr, "写入完毕 %llu\n\n", (unsigned long long)nanoseconds());
+	fprintf(stderr, "写入完毕 %llu\n\n", ulonglong nanoseconds());
 
-	for (i = 0; i < 1000; i++)
+	for (i = 0; i < 10000; i++)
 	{
-		r = rand() % 10000000 + 1;
+		r = rand() % 100000000 + 1;
 
-		fprintf(stderr, "查找 %llu\n", (unsigned long long)r);
+		fprintf(stderr, "开始查找 %llu", ulonglong r);
+		fprintf(stderr, " %llu\n", ulonglong nanoseconds());
 		mst = find(r);
 		if (mst) {
-			fprintf(stderr, "%llu 找到了 %llu\n", (unsigned long long)r,
-					(unsigned long long)nanoseconds());
+			fprintf(stderr, "%llu 找到了 %llu\n", ulonglong r,
+					ulonglong nanoseconds());
 		} else {
-			fprintf(stderr, "%llu 没到了 %llu\n", (unsigned long long)r,
-								(unsigned long long)nanoseconds());
+			fprintf(stderr, "%llu 没到了 %llu\n", ulonglong r,
+					ulonglong nanoseconds());
 			continue;
 		}
-		fprintf(stderr, "id : %llu\n", (unsigned long long)mst->ms->id);
+		fprintf(stderr, "id : %llu\n", ulonglong mst->ms->id);
 		fprintf(stderr, "mst : %p\n", mst);
 		fprintf(stderr, "ms : %p\n\n", mst->ms);
 	}
 }
 
+void doTest2()
+{
+
+}
+
 int main(int argc, char **argv)
 {
-	doTest1();		// 顺序写入，随机读取
+	doTest1();		// 顺序写入1亿条数据，随机读取10000条
+	doTest2();		// 顺序写入，随机读取
 	return 0;
 }

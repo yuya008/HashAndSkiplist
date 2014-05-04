@@ -231,7 +231,7 @@ Mst find(uint64_t id)
 	return t;
 }
 //
-//	顺序写入1亿条数据，随机读取10000条
+//	顺序写入1千万条数据，随机读取10000条
 //
 void doTest1()
 {
@@ -242,23 +242,24 @@ void doTest1()
 	Ms ms = NULL;
 	Mst mst = NULL;
 	fprintf(stderr, "开始写入数据 %llu\n", ulonglong nanoseconds());
-	for (i = 0; i < 100000000; i++)
+	for (i = 0; i < 10000000; i++)
 	{
 		ms = malloc(sizeof(struct ms));
 		ms->id = i + 1;
-		if(put(ms)) {
-			fprintf(stdout, "写入 %llu 失败\n", ulonglong(i + 1));
-			exit(1);
-		} else {
-			fprintf(stdout, "写入 %llu 成功\n", ulonglong(i + 1));
+		// if(put(ms)) {
+		// 	fprintf(stdout, "写入 %llu 失败\n", ulonglong(i + 1));
+		// 	exit(1);
+		// } else {
+		// 	fprintf(stdout, "写入 %llu 成功\n", ulonglong(i + 1));
 
-		}
+		// }
+		put(ms);
 	}
 	fprintf(stderr, "写入完毕 %llu\n\n", ulonglong nanoseconds());
 
-	for (i = 0; i < 10000; i++)
+	for (i = 0; i < 1000; i++)
 	{
-		r = rand() % 100000000 + 1;
+		r = rand() % 10000000 + 1;
 
 		fprintf(stderr, "开始查找 %llu", ulonglong r);
 		fprintf(stderr, " %llu\n", ulonglong nanoseconds());
@@ -284,7 +285,7 @@ void doTest2()
 
 int main(int argc, char **argv)
 {
-	doTest1();		// 顺序写入1亿条数据，随机读取10000条
+	doTest1();		// 顺序写入1千万条数据，随机读取10000条
 	doTest2();		// 顺序写入，随机读取
 	return 0;
 }

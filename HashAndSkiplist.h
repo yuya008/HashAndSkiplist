@@ -37,5 +37,6 @@ Mst creatNode(Ms ms);
 void extensionSkipList(Bucket *bu, int r);
 Mst createList(int,Ms);
 void freeList(Mst list);
+Mst find(uint64_t id);
 
 #endif

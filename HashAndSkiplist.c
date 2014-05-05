@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <sys/time.h>
+#include <fcntl.h>
 
 #include "HashAndSkiplist.h"
 
@@ -31,6 +32,10 @@ int put(Ms ms)
  */
 int _insertSkipList(Bucket *bu, Ms ms)
 {
+	if (find(ms->id)) {
+		free(ms);
+		return 0;
+	}
 	if (!bu->top || !bu->tail) {
 		_initSkipList(bu);					// 初始化skiplist
 	}
@@ -49,9 +54,6 @@ int _insertSkipList(Bucket *bu, Ms ms)
 		}
 		if (id(top->next) < id(newlist) && (top = top->next)) {
 			continue;
-		} else if (id(top->next) == id(newlist)) {
-			freeList(newlist);
-			break;
 		} else if (top->level > newlist->level && (top = top->down)) {
 			continue;
 		}
@@ -193,7 +195,6 @@ uint64_t nanoseconds(void)
     if (gettimeofday(&tv, 0)) {
     	return -1;
     }
-
     return ((uint64_t)tv.tv_sec)*1000000000 + ((uint64_t)tv.tv_usec)*1000;
 }
 
@@ -231,7 +232,7 @@ Mst find(uint64_t id)
 	return t;
 }
 //
-//	顺序写入1千万条数据，随机读取10000条
+//	顺序写入1亿条数据，随机读取10000条
 //
 void doTest1()
 {
@@ -242,24 +243,23 @@ void doTest1()
 	Ms ms = NULL;
 	Mst mst = NULL;
 	fprintf(stderr, "开始写入数据 %llu\n", ulonglong nanoseconds());
-	for (i = 0; i < 10000000; i++)
+	for (i = 0; i < 100000000; i++)
 	{
 		ms = malloc(sizeof(struct ms));
 		ms->id = i + 1;
-		// if(put(ms)) {
-		// 	fprintf(stdout, "写入 %llu 失败\n", ulonglong(i + 1));
-		// 	exit(1);
-		// } else {
-		// 	fprintf(stdout, "写入 %llu 成功\n", ulonglong(i + 1));
+		if(put(ms)) {
+			fprintf(stdout, "写入 %llu 失败\n", ulonglong(i + 1));
+			exit(1);
+		} else {
+			fprintf(stdout, "写入 %llu 成功\n", ulonglong(i + 1));
 
-		// }
-		put(ms);
+		}
 	}
 	fprintf(stderr, "写入完毕 %llu\n\n", ulonglong nanoseconds());
 
-	for (i = 0; i < 1000; i++)
+	for (i = 0; i < 10000; i++)
 	{
-		r = rand() % 10000000 + 1;
+		r = rand() % 100000000 + 1;
 
 		fprintf(stderr, "开始查找 %llu", ulonglong r);
 		fprintf(stderr, " %llu\n", ulonglong nanoseconds());
@@ -268,7 +268,7 @@ void doTest1()
 			fprintf(stderr, "%llu 找到了 %llu\n", ulonglong r,
 					ulonglong nanoseconds());
 		} else {
-			fprintf(stderr, "%llu 没到了 %llu\n", ulonglong r,
+			fprintf(stderr, "%llu 没找到 %llu\n", ulonglong r,
 					ulonglong nanoseconds());
 			continue;
 		}
@@ -280,12 +280,48 @@ void doTest1()
 
 void doTest2()
 {
+	int i,r;
+	Ms ms = NULL;
+	Mst mst = NULL;
+	ssize_t s;
+	int fd = open("tmp", O_RDWR|O_CREAT|O_TRUNC, 0777);
 
+	for (i = 0; i < 10000000; i++)
+	{
+		r = rand() % 10000000 + 1;
+
+		ms = malloc(sizeof(struct ms));
+		ms->id = r;
+		if(put(ms)) {
+			fprintf(stderr, "%s\n", "插入失败");
+			exit(1);
+		}
+		write(fd, &r, sizeof(int));
+	}
+	fprintf(stderr, "%s\n", "开始读");
+	lseek(fd, 0, SEEK_SET);
+
+	while ((s = read(fd, &r, sizeof(int))))
+	{
+		fprintf(stderr, "开始查找 %d", r);
+		fprintf(stderr, " %llu\n", ulonglong nanoseconds());
+		if ((mst = find(r))) {
+			fprintf(stderr, "%llu 找到了 %llu\n", ulonglong r,
+								ulonglong nanoseconds());
+		} else {
+			fprintf(stderr, "%llu 没找到 %llu\n", ulonglong r,
+								ulonglong nanoseconds());
+						continue;
+		}
+		fprintf(stderr, "Ms %p\n", mst->ms);
+		fprintf(stderr, "Mst %p\n\n", mst);
+	}
+	close(fd);
 }
 
 int main(int argc, char **argv)
 {
-	doTest1();		// 顺序写入1千万条数据，随机读取10000条
+	//doTest1();		// 顺序写入1亿条数据，随机读取10000条
 	doTest2();		// 顺序写入，随机读取
 	return 0;
 }

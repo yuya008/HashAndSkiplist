@@ -7,7 +7,7 @@
 
 #include "HashAndSkiplist.h"
 
-static Mst _insertFind(uint64_t id);
+static Mst _insertFind(uint64_t id, int r);
 static int _insertSkipList(Bucket *bu, Ms ms);
 static Mst createList(int r, Ms ms);
 static void extensionSkipList(Bucket *bu, int r);
@@ -18,6 +18,7 @@ static struct bucket hashTable[TL];
 
 /**
  * 放入元素
+ *
  */
 int put(Ms ms)
 {
@@ -34,17 +35,28 @@ int put(Ms ms)
 	return 0;
 }
 
-static Mst _insertFind(uint64_t id)
+/*
+	插入前的查找，如果找到应该插入的位置，没有希望插入的元素则返回，插入点
+	如果有希望插入的数据返回NULL
+*/
+static Mst _insertFind(uint64_t id, int r)
 {
-	
+	Bucket *b = &hashTable[id % TL];
+	if (!b->top) {
+		return NULL;
+	}
+	Mst t = b->top;
+
 	return NULL;
 }
 
-/**
- * 插入
- */
+/*
+插入
+*/
 static int _insertSkipList(Bucket *bu, Ms ms)
 {
+	int r = (rand() % maxHeight) + 1;		// 插入元素的随机层数
+
 	if (find(ms->id)) {
 		free(ms);
 		return 0;
@@ -53,7 +65,6 @@ static int _insertSkipList(Bucket *bu, Ms ms)
 		_initSkipList(bu);					// 初始化skiplist
 	}
 
-	int r = (rand() % maxHeight) + 1;		// 插入元素的随机层数
 	if (r > bu->maxLevel) {					// 如果插入元素随机层数大于当前最大层数值，那么触发扩展skiplist
 		extensionSkipList(bu, r);
 	}
@@ -95,7 +106,6 @@ static Mst createList(int r, Ms ms)
 		if (t) {
 			mst->down = t;
 		}
-
 		t = mst;
 	}
 	return mst;
@@ -237,48 +247,51 @@ Mst find(uint64_t id)
 	}
 	return t;
 }
+
+#define ull	(unsigned long long)
+
 //
 //	顺序写入1亿条数据，随机读取10000条
 //
 void doTest1()
 {
 
-#define ulonglong	(unsigned long long)
+
 
 	uint64_t i,r;
 	Ms ms = NULL;
 	Mst mst = NULL;
-	fprintf(stderr, "开始写入数据 %llu\n", ulonglong nanoseconds());
+	fprintf(stderr, "开始写入数据 %llu\n", ull nanoseconds());
 	for (i = 0; i < 100000000; i++)
 	{
 		ms = malloc(sizeof(struct ms));
 		ms->id = i + 1;
 		if(put(ms)) {
-			fprintf(stdout, "写入 %llu 失败\n", ulonglong(i + 1));
+			fprintf(stdout, "写入 %llu 失败\n", ull(i + 1));
 			exit(1);
 		} else {
-			fprintf(stdout, "写入 %llu 成功\n", ulonglong(i + 1));
+			fprintf(stdout, "写入 %llu 成功\n", ull(i + 1));
 
 		}
 	}
-	fprintf(stderr, "写入完毕 %llu\n\n", ulonglong nanoseconds());
+	fprintf(stderr, "写入完毕 %llu\n\n", ull nanoseconds());
 
 	for (i = 0; i < 10000; i++)
 	{
 		r = rand() % 100000000 + 1;
 
-		fprintf(stderr, "开始查找 %llu", ulonglong r);
-		fprintf(stderr, " %llu\n", ulonglong nanoseconds());
+		fprintf(stderr, "开始查找 %llu", ull r);
+		fprintf(stderr, " %llu\n", ull nanoseconds());
 		mst = find(r);
 		if (mst) {
-			fprintf(stderr, "%llu 找到了 %llu\n", ulonglong r,
-					ulonglong nanoseconds());
+			fprintf(stderr, "%llu 找到了 %llu\n", ull r,
+					ull nanoseconds());
 		} else {
-			fprintf(stderr, "%llu 没找到 %llu\n", ulonglong r,
-					ulonglong nanoseconds());
+			fprintf(stderr, "%llu 没找到 %llu\n", ull r,
+					ull nanoseconds());
 			continue;
 		}
-		fprintf(stderr, "id : %llu\n", ulonglong mst->ms->id);
+		fprintf(stderr, "id : %llu\n", ull mst->ms->id);
 		fprintf(stderr, "mst : %p\n", mst);
 		fprintf(stderr, "ms : %p\n\n", mst->ms);
 	}
@@ -310,13 +323,13 @@ void doTest2()
 	while ((s = read(fd, &r, sizeof(int))))
 	{
 		fprintf(stderr, "开始查找 %d", r);
-		fprintf(stderr, " %llu\n", ulonglong nanoseconds());
+		fprintf(stderr, " %llu\n", ull nanoseconds());
 		if ((mst = find(r))) {
-			fprintf(stderr, "%llu 找到了 %llu\n", ulonglong r,
-								ulonglong nanoseconds());
+			fprintf(stderr, "%llu 找到了 %llu\n", ull r,
+								ull nanoseconds());
 		} else {
-			fprintf(stderr, "%llu 没找到 %llu\n", ulonglong r,
-								ulonglong nanoseconds());
+			fprintf(stderr, "%llu 没找到 %llu\n", ull r,
+								ull nanoseconds());
 						continue;
 		}
 		fprintf(stderr, "Ms %p\n", mst->ms);
@@ -328,6 +341,6 @@ void doTest2()
 int main(int argc, char **argv)
 {
 	//doTest1();		// 顺序写入1亿条数据，随机读取10000条
-	doTest2();		// 顺序写入，随机读取
+	doTest2();			// 随即写入，随机读取
 	return 0;
 }

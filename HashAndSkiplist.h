@@ -1,9 +1,9 @@
 #ifndef _HASHANDSKIPLIST_H_
 #define _HASHANDSKIPLIST_H_
 
-#define TL			10000
+#define TL				10000
 #define maxHeight	10
-#define id(x)		(x->ms->id)
+#define id(x)			(x->ms->id)
 
 typedef struct bucket Bucket;
 typedef struct ms *Ms;

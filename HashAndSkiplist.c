@@ -7,6 +7,13 @@
 
 #include "HashAndSkiplist.h"
 
+static Mst _insertFind(uint64_t id);
+static int _insertSkipList(Bucket *bu, Ms ms);
+static Mst createList(int r, Ms ms);
+static void extensionSkipList(Bucket *bu, int r);
+static void _initSkipList(Bucket *bu);
+static Mst creatNode(Ms ms);
+
 static struct bucket hashTable[TL];
 
 /**
@@ -27,10 +34,16 @@ int put(Ms ms)
 	return 0;
 }
 
+static Mst _insertFind(uint64_t id)
+{
+	
+	return NULL;
+}
+
 /**
  * 插入
  */
-int _insertSkipList(Bucket *bu, Ms ms)
+static int _insertSkipList(Bucket *bu, Ms ms)
 {
 	if (find(ms->id)) {
 		free(ms);
@@ -71,14 +84,7 @@ int _insertSkipList(Bucket *bu, Ms ms)
 	return 0;
 }
 
-void freeList(Mst list)
-{
-	for (;list;list = list->down) {
-		free(list);
-	}
-}
-
-Mst createList(int r, Ms ms)
+static Mst createList(int r, Ms ms)
 {
 	int i;
 	Mst mst = NULL, t = NULL;
@@ -95,7 +101,7 @@ Mst createList(int r, Ms ms)
 	return mst;
 }
 
-void extensionSkipList(Bucket *bu, int r)
+static void extensionSkipList(Bucket *bu, int r)
 {
 	if (bu->maxLevel >= r) {
 		return;
@@ -125,7 +131,7 @@ void extensionSkipList(Bucket *bu, int r)
  * 初始化skiplist
  * 随机制造出最小值一列和最大值一列
  */
-void _initSkipList(Bucket *bu)
+static void _initSkipList(Bucket *bu)
 {
 	int r = (rand() % maxHeight) + 1, l = r;
 	Mst t = NULL, e = NULL,tmp = NULL,
@@ -168,7 +174,7 @@ void _initSkipList(Bucket *bu)
 /*
  * 创建链表节点
  */
-Mst creatNode(Ms ms)
+static Mst creatNode(Ms ms)
 {
 	Mst mst = NULL;
 

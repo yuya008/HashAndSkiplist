@@ -7,7 +7,6 @@
 
 #include "HashAndSkiplist.h"
 
-static Mst _insertFind(uint64_t id, int r);
 static int _insertSkipList(Bucket *bu, Ms ms);
 static Mst createList(int r, Ms ms);
 static void extensionSkipList(Bucket *bu, int r);
@@ -16,10 +15,9 @@ static Mst creatNode(Ms ms);
 
 static struct bucket hashTable[TL];
 
-/**
- * 放入元素
- *
- */
+/*
+	放入元素
+*/
 int put(Ms ms)
 {
 	if (!ms) {
@@ -36,22 +34,7 @@ int put(Ms ms)
 }
 
 /*
-	插入前的查找，如果找到应该插入的位置，没有希望插入的元素则返回，插入点
-	如果有希望插入的数据返回NULL
-*/
-static Mst _insertFind(uint64_t id, int r)
-{
-	Bucket *b = &hashTable[id % TL];
-	if (!b->top) {
-		return NULL;
-	}
-	Mst t = b->top;
-
-	return NULL;
-}
-
-/*
-插入
+	插入
 */
 static int _insertSkipList(Bucket *bu, Ms ms)
 {
@@ -118,8 +101,8 @@ static void extensionSkipList(Bucket *bu, int r)
 	}
 
 	int i = bu->maxLevel + 1;
-	Mst h = NULL, t = NULL, e = bu->top,
-			k = bu->tail;
+	Mst h = NULL, t = NULL;
+	Mst e = bu->top,k = bu->tail;
 
 	for (;i <= r;i++) {
 		h = creatNode(bu->top->ms);
@@ -222,7 +205,7 @@ Mst find(uint64_t id)
 	}
 	Mst t = b->top;
 	for (;;) {
-		if (!t) {
+		if (!t) { 
 			break;
 		}
 		if (id(t) == id) {
